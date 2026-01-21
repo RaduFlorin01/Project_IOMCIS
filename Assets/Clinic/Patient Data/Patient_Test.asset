@@ -18,7 +18,7 @@ MonoBehaviour:
   currentHbA1c: 8
   fastingGlucose: 8
   hasLipodystrophy: 0
-  hasFootSensitivityLoss: 1
+  hasFootSensitivityLoss: 0
   targetInsulinBasal: 20
   correctDiagnosisNote: Inca nu se stie
   listaIntrebari:
@@ -26,7 +26,9 @@ MonoBehaviour:
     raspunsPacient: "Doar pu\u021Bin\u0103 ciocolat\u0103"
   - intrebareJucator: "Respecta\u021Bi dieta recomandat\u0103?"
     raspunsPacient: "\xCEn mare parte, da."
-  - intrebareJucator: "Lua\u021Bi tratamentul zilnic?"
-    raspunsPacient: "Da, dar uneori uit diminea\u021Ba."
+  - intrebareJucator: "V\u0103 rog s\u0103 v\u0103 a\u0219eza\u021Bi pe pat"
+    raspunsPacient: 'Ok
+
+'
   - intrebareJucator: "V\u0103 m\u0103sura\u021Bi glicemia zilnic?"
     raspunsPacient: "\xCEn fiecare zi."

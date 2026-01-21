@@ -3,7 +3,7 @@ using UnityEngine.UI; // Avem nevoie de asta pentru a controla Ținta (Image)
 
 public class PlayerInteraction : MonoBehaviour
 {
-    public float distanta = 3f; // Cât de departe poți ajunge cu mâna
+    public float distanta = 50f; // Cât de departe poți ajunge cu mâna
     public Image tinta;
     //AAAA
     public ComputerMonitor scriptMonitor;
@@ -12,7 +12,7 @@ public class PlayerInteraction : MonoBehaviour
     void Update()
     {
         Ray raza = new Ray(transform.position, transform.forward);
-        RaycastHit obiectLovis; 
+        RaycastHit obiectLovis;
         if (Physics.Raycast(raza, out obiectLovis, distanta))
         {
             if (obiectLovis.collider.CompareTag("Computer"))
