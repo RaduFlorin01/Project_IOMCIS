@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+
 public class TreatmentManager : MonoBehaviour
 {
     [Header("UI Elemente")]
@@ -44,12 +45,16 @@ public class TreatmentManager : MonoBehaviour
         StartCoroutine(AfiseazaRezultatCuIntarziere());
     }
 
-   
     IEnumerator AfiseazaRezultatCuIntarziere()
     {
+        grupControale.SetActive(false); // Blocăm butoanele
+        
         float dozaAleasa = sliderInsulina.value;
-        float dozaCorecta = datePacient.targetInsulinBasal;
+        float dozaCorecta = (datePacient != null) ? datePacient.targetInsulinBasal : 0;
         float diferenta = Mathf.Abs(dozaAleasa - dozaCorecta);
+
+        textRezultat.gameObject.SetActive(true);
+
         if (diferenta <= 2)
         {
             textRezultat.text = "EXCELENT! Doza este corectă.";
@@ -57,19 +62,19 @@ public class TreatmentManager : MonoBehaviour
         }
         else if (dozaAleasa < dozaCorecta)
         {
-            textRezultat.text = "PREA PUȚIN! Pacientul riscă hiperglicemie.";
+            textRezultat.text = "PREA PUȚIN! Risc de hiperglicemie.";
             textRezultat.color = Color.red;
         }
         else
         {
-            textRezultat.text = "PREA MULT! Risc de hipoglicemie severă!";
+            textRezultat.text = "PREA MULT! Risc de hipoglicemie.";
             textRezultat.color = Color.red;
         }
-        grupControale.SetActive(false);
-        textRezultat.gameObject.SetActive(true);
+
         yield return new WaitForSeconds(3f);
+
         textRezultat.gameObject.SetActive(false); 
-        grupControale.SetActive(true); 
+        grupControale.SetActive(true); // Deblocăm butoanele
     }
 
     public void InchidePanou()
@@ -77,5 +82,14 @@ public class TreatmentManager : MonoBehaviour
         panouTratament.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    // --- FUNCTIA NOUA CARE LIPSEA ---
+    public bool ETratamentCorect()
+    {
+        if (datePacient == null) return false;
+        
+        float dozaAleasa = sliderInsulina.value;
+        return Mathf.Abs(dozaAleasa - datePacient.targetInsulinBasal) <= 2;
     }
 }

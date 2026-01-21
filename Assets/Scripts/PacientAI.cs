@@ -1,67 +1,108 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections; // Necesar pentru Coroutine (Așteptare)
 
 public class PacientAI : MonoBehaviour
 {
-    [Header("Setari")]
-    public Transform destinatiePat; // Trage aici obiectul PunctAsezare
-    public Animator animatorPacient; // Trage aici componenta Animator (de pe copilul Male Young Guy)
+    [Header("Destinații")]
+    public Transform destinatiePat;
+    public Transform destinatieIesire;
 
+    [Header("Componente")]
+    public Animator animatorPacient;
+    
     private NavMeshAgent agent;
-    private bool comandaPrimita = false;
+    private bool ePePiciorDePlecare = false;
+    private bool seMisca = false;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        // Dezactivăm rotația automată doar la final, momentan o lăsăm
-        agent.updateRotation = true; 
+        agent.updateRotation = true;
+
+        if (animatorPacient)
+        {
+            animatorPacient.Play("Breathing Idle");
+            animatorPacient.ResetTrigger("Sit"); 
+            animatorPacient.ResetTrigger("StandUp"); // Resetăm și asta
+            animatorPacient.SetBool("IsWalking", false);
+        }
     }
 
-    // Această funcție o vei pune pe BUTONUL din Dialog
     public void MergiLaPat()
     {
         if (destinatiePat != null)
         {
-            comandaPrimita = true;
             agent.isStopped = false;
-            
-            // Îi dăm destinația
             agent.SetDestination(destinatiePat.position);
-
-            // Pornim animația de MERS
+            
             if(animatorPacient) animatorPacient.SetBool("IsWalking", true);
+            
+            seMisca = true;
+            ePePiciorDePlecare = false;
         }
     }
+
+    // --- MODIFICARE AICI: Folosim o Coroutine pentru secvența de plecare ---
+    public void PleacaAcasa()
+    {
+        StartCoroutine(SecventaRidicareSiPlecare());
+    }
+
+    IEnumerator SecventaRidicareSiPlecare()
+    {
+        // 1. Declasăm animația de ridicare
+        if(animatorPacient)
+        {
+            animatorPacient.ResetTrigger("Sit"); // Siguranță
+            animatorPacient.SetTrigger("StandUp"); // RIDICĂ-TE!
+        }
+
+        // 2. Așteptăm să se termine animația (aprox 2.5 secunde, depinde de animația ta)
+        // Poți ajusta numărul acesta dacă se mișcă prea repede sau prea târziu
+        yield return new WaitForSeconds(2.5f); 
+
+        // 3. Abia ACUM începem să ne mișcăm spre ușă
+        if (destinatieIesire != null)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(destinatieIesire.position);
+            
+            if(animatorPacient) animatorPacient.SetBool("IsWalking", true);
+
+            ePePiciorDePlecare = true;
+            seMisca = true;
+        }
+    }
+    // -----------------------------------------------------------------------
 
     void Update()
     {
-        if (comandaPrimita && !agent.pathPending)
+        if (seMisca == false) return;
+
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
-            // Verificăm dacă a ajuns (distanța rămasă < distanța de stopare)
-            if (agent.remainingDistance <= agent.stoppingDistance)
+            if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f)
             {
-                if (!agent.hasPath || agent.velocity.sqrMagnitude == 0f)
+                seMisca = false;
+
+                if (!ePePiciorDePlecare) 
                 {
-                    // A AJUNS LA PAT!
-                    OprireSiAsezare();
+                    // A ajuns la PAT
+                    agent.isStopped = true;
+                    if(animatorPacient)
+                    {
+                        animatorPacient.SetBool("IsWalking", false);
+                        animatorPacient.SetTrigger("Sit");
+                    }
+                    transform.rotation = destinatiePat.rotation;
+                }
+                else 
+                {
+                    // A ajuns la UȘĂ
+                    Destroy(gameObject);
                 }
             }
         }
-    }
-
-    void OprireSiAsezare()
-    {
-        comandaPrimita = false;
-        agent.isStopped = true; // Oprim agentul
-
-        // Oprim animația de mers
-        if (animatorPacient)
-        {
-            animatorPacient.SetBool("IsWalking", false);
-            animatorPacient.SetTrigger("Sit"); // Declanșăm așezarea
-        }
-
-        // TRUC FINAL: Îl rotim forțat să stea cu spatele la pat (cum e PunctAsezare)
-        transform.rotation = destinatiePat.rotation;
     }
 }
